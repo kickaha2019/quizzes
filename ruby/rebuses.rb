@@ -26,16 +26,16 @@ class Rebuses
     write_header( @title, 1, @items.size, io)
     answer_width = maximum_text_width( @items.collect {|item| item['answer']})
     io.puts <<"HEADER"
-<table class="rebus"><tr><th>#</th><th>Rebus</th><th style="min-width: #{answer_width}px">Answer</th></tr>
+<div class="items">
 HEADER
   end
   
   def generate_question( index, rebus, answer, questions, io)
-    io.puts "<tr><td>#{index}</td><td>"
+    io.puts "<div class=\"rebus\">"
     generate_rebus( rebus, questions, io)
-    io.puts "</td><td>"
+    io.print '<div class="overlaid">'
     write_clue_answer( index, '', answer, io)
-    io.puts "</td></tr>"
+    io.puts "</div></div>"
   end
   
   def generate_questions( questions, output)
@@ -44,12 +44,11 @@ HEADER
       @items.each_index do |i|
         generate_question( i+1, @items[i]['rebus'], @items[i]['answer'], questions, io)
       end
-      io.puts '</table></body></html>'
+      io.puts '</div></body></html>'
     end
   end
 
   def generate_rebus( rebus, questions, io)
-    io.puts '<div class="rebus">'
     separ = ''
     rebus.split( /\s+/).each do |word|
       io.print separ
@@ -69,12 +68,13 @@ HEADER
         image = @images['-becomes']
         io.print "<img width=\"30\" height=\"25\" src=\"#{questions}-#{image[:index]}.jpg\">"
         io.print "<span class=\"rebus plus\">#{word[3..3].upcase}</span>"
+      elsif '_' == word
+        io.print "<span class=\"rebus plus\">&nbsp;</span>"
       else
         image = @images[word]
         io.print "<img src=\"#{questions}-#{image[:index]}.jpg\">"
       end
     end
-    io.puts '<div>'
   end
 
   def prepare_images
@@ -84,7 +84,7 @@ HEADER
 
     @items.each do |item|
       item['rebus'].split( /\s+/).each do |word|
-        unless (/[\-\+\>]/ =~ word) || @images[word]
+        unless (/[\-\+\>]/ =~ word) || (/^_/ =~ word) || @images[word]
           @images[word] = {:image => 'rebuses/images/' + word.capitalize + '.jpg',
                            :index => @images.size}
         end

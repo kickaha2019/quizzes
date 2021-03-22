@@ -131,11 +131,27 @@ module Common
 <html><head>
 <title>#{prettify(title)}</title>
 <style>
+@keyframes overlaid {
+  0% {opacity: 0}
+  10% {opacity: 1}
+  90% {opacity: 1}
+  100% {opacity: 0}
+}
 div.number {font-weight: bold; font-size: 24px; padding-bottom: 5px;}
 div.item {border: solid 1px black; margin: 10px; padding: 10px; display: inline-block;
           max-width: 360px}
+div.overlaid {position: absolute; top: -20px; left: -20px; 
+              margin: 10px; padding: 10px; 
+}
+div.overlaid .answer {color: black; background: white; font-size: 30px;
+                      border: solid 1px black; }
+div.dummy {
+              animation-name: overlaid; animation-duration: 2s; 
+              animation-iteration-count: infinite;
+              animation-timing-function: linear
+}
 div.items {display: flex; flex-direction: row; flex-wrap: wrap;
-           align-items: flex-start;}
+           align-items: flex-start}
 table.header {width: 100%}
 table.header td {border-width: 0px}
 td.left, td.right {width: 10%}
@@ -150,7 +166,8 @@ td, th {padding: 5px; border-style: solid; font-size: 40px;
 table.rebus td, table.rebus th {font-size: 60px}
 span.rebus {font-size: 120px; font-family: Courier, monospace}
 span.minus {position: relative; left: -72px; color: red; font-weight: normal}
-div.rebus {display: flex; flex-direction: row; 
+div.rebus {border: solid 1px black; margin: 10px; padding: 10px; 
+           display: flex; flex-direction: row; position: relative; 
            align-items: center; justify-content: middle}
 div.minus {display: inline-block; width: 72px}
 td:first-child {text-align: center}
@@ -200,7 +217,7 @@ HEADER2
   end
 
   def write_clue_answer( index, clue, answer, io)
-    io.puts <<"ITEM"
+    io.print <<"ITEM"
 <span id="c#{index}" class=\"clue\">#{clue}</span><span id="a#{index}" class=\"answer\">#{answer}</span>
 ITEM
   end
