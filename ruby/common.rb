@@ -143,8 +143,8 @@ div.item {border: solid 1px black; margin: 10px; padding: 10px; display: inline-
 div.overlaid {position: absolute; top: -20px; left: -20px; 
               margin: 10px; padding: 10px; 
 }
-div.overlaid .answer {color: black; background: white; font-size: 30px;
-                      border: solid 1px black; }
+div.overlaid span {color: black; background: white; font-size: 30px;
+                   border: solid 1px black;}
 div.dummy {
               animation-name: overlaid; animation-duration: 2s; 
               animation-iteration-count: infinite;

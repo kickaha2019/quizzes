@@ -11,9 +11,11 @@ class Pictures
       known_images[known['picture'].gsub( ' ', '_')] = true
     end
 
+    name2images = {}
     Dir.entries( dir).each do |f|
       if /\.(jpg|png|jpeg|gif)$/i =~ f
         name = f.split('.')[0].gsub( ' ', '_')
+        name2images[name] = f
         unless known_images[name]
           @meta['pictures'] << {'picture' => name}
         end
@@ -21,18 +23,11 @@ class Pictures
     end
 
     chosen = select_questions( date, @meta, 'pictures', size, dir + '/meta.yaml')
-    chosen_names = {}
-    chosen.each {|entry| chosen_names[entry['picture'].gsub( ' ', '_')] = true}
-
     items = []
-    Dir.entries( dir).each do |f|
-      if /\.(jpg|png|jpeg|gif)$/i =~ f
-        name = f.split('.')[0]
-        if chosen_names[name.gsub( ' ', '_')]
-          items << {:title => prettify(name),
-                    :image => dir + '/' + f}
-        end
-      end
+    chosen.each do |entry|
+      name = entry['picture'].split('.')[0]
+      items << {:title => entry['title'] ? entry['title'] : prettify( entry['picture']),
+                :image => dir + '/' + name2images[entry['picture']]}
     end
 
     @items = items.shuffle[0...size]
@@ -46,6 +41,10 @@ class Pictures
 
   def generate( questions, image_width, image_height, output)
     prepare_images
+    if @meta['table']
+      image_width  = (image_width * 0.66).to_i
+      image_height = (image_height * 0.66).to_i
+    end
     copy_images( image_width, image_height, questions, output)
     generate_questions( questions, output)
     @title
@@ -53,16 +52,27 @@ class Pictures
 
   def generate_header( io)
     write_header( @title, 1, @items.size, io)
-    io.puts <<"HEADER"
-<div class="items">
+    if @meta['table']
+      io.puts <<"HEADER"
+<table><tr><th>#</th><th>#{@meta['clue_name']}</th><th>#{@meta['answer_name']}</th></tr>
 HEADER
+    else
+      io.puts '<div class="items">'
+    end
   end
   
   def generate_item( item, index, clue, answer, questions, io)
-    io.puts "<div class=\"item\"><div class=\"number\">##{index+1} "
-    write_clue_answer( index+1, clue, answer, io)
-    io.puts "</div>"
-    io.puts "<img src=\"#{questions}-#{index}.#{item[:image].split('.')[-1]}\"></div>"
+    if @meta['table']
+      io.puts "<tr><td>#{index+1}</td><td>"
+      io.puts "<img src=\"#{questions}-#{index}.#{item[:image].split('.')[-1]}\"></td><td>"
+      write_clue_answer( index+1, clue, answer, io)
+      io.puts "</td></tr>"
+    else
+      io.puts "<div class=\"item\"><div class=\"number\">##{index+1} "
+      write_clue_answer( index+1, clue, answer, io)
+      io.puts "</div>"
+      io.puts "<img src=\"#{questions}-#{index}.#{item[:image].split('.')[-1]}\"></div>"
+    end
   end
   
   def generate_questions( questions, output)
@@ -77,7 +87,8 @@ HEADER
       @items.each_index do |i|
         generate_item( @items[i], i, titles[i] + '?', @items[i][:title], questions, io)
       end
-      
+
+      io.puts( @meta['table'] ? '</table>' : '</div>')
       io.puts '</div></body></html>'
     end
   end
