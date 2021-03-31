@@ -31,6 +31,7 @@ class Pictures
     end
 
     @items = items.shuffle[0...size]
+    @items.each_index {|i| @items[i][:index] = i}
   end
 
   def copy_images( target_width, target_height, questions, output)
@@ -61,15 +62,31 @@ HEADER
     end
   end
   
-  def generate_item( item, index, clue, answer, questions, io)
+  def generate_item( item, index, clue, questions, io)
     if @meta['table']
       io.puts "<tr><td>#{index+1}</td><td>"
-      io.puts "<img src=\"#{questions}-#{index}.#{item[:image].split('.')[-1]}\"></td><td>"
-      write_clue_answer( index+1, clue, answer, io)
+      if @meta['invert']
+        io.puts item[:title]
+      else
+        write_image( item, "i#{index+1}", '', questions, io)
+      end
+      io.puts "</td><td>"
+      if @meta['invert']
+        write_image( item,  "a#{index+1}", 'answer', questions, io)
+        write_image( clue,  "c#{index+1}", 'clue', questions, io)
+      else
+        write_clue_answer( index+1,
+                           @meta['hide_answers'] ? (clue[:title] + '?') : '',
+                           item[:title],
+                           io)
+      end
       io.puts "</td></tr>"
     else
       io.puts "<div class=\"item\"><div class=\"number\">##{index+1} "
-      write_clue_answer( index+1, clue, answer, io)
+      write_clue_answer( index+1,
+                         @meta['hide_answers'] ? (clue[:title] + '?') : '',
+                         item[:title],
+                         io)
       io.puts "</div>"
       io.puts "<img src=\"#{questions}-#{index}.#{item[:image].split('.')[-1]}\"></div>"
     end
@@ -79,13 +96,13 @@ HEADER
     File.open( "#{output}/#{questions}.html", 'w') do |io|
       generate_header( io)
 
-      titles = shuffle_answers( @items.collect {|item| item[:title]})
+      clues = shuffle_answers( @items)
       if @meta['hide_answers']
         titles = @items.collect {''}
       end
 
       @items.each_index do |i|
-        generate_item( @items[i], i, titles[i] + '?', @items[i][:title], questions, io)
+        generate_item( @items[i], i, clues[i], questions, io)
       end
 
       io.puts( @meta['table'] ? '</table>' : '</div>')
@@ -95,5 +112,9 @@ HEADER
 
   def prepare_images
     @items.each {|item| prepare_image( item)}
+  end
+
+  def write_image( item, id, clazz, questions, io)
+    io.puts "<img id=\"#{id}\" class=\"#{clazz}\" src=\"#{questions}-#{item[:index]}.#{item[:image].split('.')[-1]}\">"
   end
 end
