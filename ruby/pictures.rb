@@ -84,7 +84,7 @@ HEADER
     else
       io.puts "<div class=\"item\"><div class=\"number\">##{index+1} "
       write_clue_answer( index+1,
-                         @meta['hide_answers'] ? (clue[:title] + '?') : '',
+                         @meta['hide_answers'] ? '' : (clue[:title] + '?'),
                          item[:title],
                          io)
       io.puts "</div>"
@@ -97,9 +97,6 @@ HEADER
       generate_header( io)
 
       clues = shuffle_answers( @items)
-      if @meta['hide_answers']
-        titles = @items.collect {''}
-      end
 
       @items.each_index do |i|
         generate_item( @items[i], i, clues[i], questions, io)
