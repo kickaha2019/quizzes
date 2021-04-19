@@ -164,6 +164,7 @@ th {font-weight: bold}
 td, th {padding: 5px; border-style: solid; font-size: 40px;
         border-width: 1px; border-color: black}
 table.rebus td, table.rebus th {font-size: 60px}
+table.emojis td, table.emojis th {font-size: 40px}
 span.rebus {font-size: 120px; font-family: Courier, monospace}
 span.minus {position: relative; left: -72px; color: red; font-weight: normal}
 div.rebus {border: solid 1px black; margin: 10px; padding: 10px; 

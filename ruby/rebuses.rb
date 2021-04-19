@@ -34,7 +34,7 @@ HEADER
     io.puts "<div class=\"rebus\">"
     generate_rebus( rebus, questions, io)
     io.print '<div class="overlaid">'
-    write_clue_answer( index, "##{index}", "##{index}: " + answer, io)
+    write_clue_answer( index, "##{index}", "##{index}:&nbsp;" + answer, io)
     io.puts "</div></div>"
   end
   
