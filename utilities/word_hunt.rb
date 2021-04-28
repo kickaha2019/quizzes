@@ -1,4 +1,4 @@
-class WordSearch
+class WordHunt
   def initialize( dir)
     @words = IO.readlines( dir + '/words.txt').collect {|l| l.downcase.strip}
     @alphabet = "abcdefghijklmnopqrstuvwxyz"

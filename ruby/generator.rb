@@ -17,6 +17,7 @@ require 'questions.rb'
 require 'rebuses.rb'
 require 'reveals.rb'
 require 'sequences.rb'
+require 'word_search'
 
 class Generator
   include Common
@@ -78,6 +79,9 @@ class Generator
     elsif /^Sequences/ =~ dir
       sequences = Sequences.new( @date, name, dir, @size)
       sequences.generate( questions, output)
+    elsif /^WordSearch/ =~ dir
+      word_search = WordSearch.new( @date, name, dir, @size)
+      word_search.generate( questions, output)
     else
       raise "Unhandled puzzle: #{dir}"
     end

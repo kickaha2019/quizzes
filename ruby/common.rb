@@ -126,8 +126,56 @@ module Common
     best
   end
 
+  def write_clue_answer( index, clue, answer, io)
+    io.print <<"ITEM"
+<span id="c#{index}" class=\"clue\">#{clue}</span><span id="a#{index}" class=\"answer\">#{answer}</span>
+ITEM
+  end
+
   def write_header( title, from, to, io)
+    write_header_base( title, io)
     io.puts <<"HEADER1"
+<script>
+    let item = #{from};
+
+    function hide( eid) {
+      document.getElementById( eid).style.display = 'none';
+    }
+
+    function fade_clue() {
+      document.getElementById( "c" + item).style.opacity = 0;
+    }
+
+    function show_answer() {
+      hide( "c" + item);
+      document.getElementById( "a" + item).style.display = 'inline';
+      document.getElementById( "a" + item).style.opacity = 1;
+      item = item + 1;
+    }
+
+    function reveal() {
+      hide( 'button');
+HEADER1
+
+    (from..to).each do |i|
+      io.puts "setTimeout( fade_clue, #{i * 600 - 300});"
+      io.puts "setTimeout( show_answer, #{i * 600});"
+    end
+
+    io.puts <<"HEADER2"
+    }
+</script>
+</head><body>
+<table class="header">
+<tr><td class="left"></td>
+<td class="middle"><div class="title">#{prettify(title)}</div></td>
+<td class="right" style="min-height: 67px"><button id="button" onclick="reveal()">Answers</button></td>
+</table>
+HEADER2
+  end
+
+  def write_header_base( title, io)
+    io.puts <<"HEADER3"
 <html><head>
 <title>#{prettify(title)}</title>
 <style>
@@ -177,50 +225,11 @@ span.box {font-size: 30px; text-decoration: none; font-weight: bold; background-
           border-radius: 5px; border-color: blue; color: yellow; padding: 5px}
 td.box {padding-bottom: 10px}
 span.box b {color: white; text-decoration: underline}
+table.word_search td {border-width: 0px; vertical-align: top}
+table.grid td {border-width: 1px; text-align: center}
+table.hidden td {border-width: 1px; text-align: left}
 </style>
-<script>
-    let item = #{from};
-
-    function hide( eid) {
-      document.getElementById( eid).style.display = 'none';
-    }
-
-    function fade_clue() {
-      document.getElementById( "c" + item).style.opacity = 0;
-    }
-
-    function show_answer() {
-      hide( "c" + item);
-      document.getElementById( "a" + item).style.display = 'inline';
-      document.getElementById( "a" + item).style.opacity = 1;
-      item = item + 1;
-    }
-
-    function reveal() {
-      hide( 'button');
-HEADER1
-
-    (from..to).each do |i|
-      io.puts "setTimeout( fade_clue, #{i * 600 - 300});"
-      io.puts "setTimeout( show_answer, #{i * 600});"
-    end
-
-    io.puts <<"HEADER2"
-    }
-</script>
-</head><body>
-<table class="header">
-<tr><td class="left"></td>
-<td class="middle"><div class="title">#{prettify(title)}</div></td>
-<td class="right" style="min-height: 67px"><button id="button" onclick="reveal()">Answers</button></td>
-</table>
-HEADER2
-  end
-
-  def write_clue_answer( index, clue, answer, io)
-    io.print <<"ITEM"
-<span id="c#{index}" class=\"clue\">#{clue}</span><span id="a#{index}" class=\"answer\">#{answer}</span>
-ITEM
+HEADER3
   end
 
   def write_item( index, prompt, clue, answer, io)
