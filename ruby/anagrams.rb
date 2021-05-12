@@ -1,12 +1,12 @@
 class Anagrams
   include Common
 
-  def initialize( date, name, dir, size)
+  def initialize( index, name, dir, size)
     @title = 'Solve anagrams for the names of ' + name
     defn = YAML.load( IO.read( dir))
     @title = defn['title'] if defn['title']
     # @items = defn['anagrams'].shuffle[0...size]
-    @items = select_questions( date, defn, 'anagrams', size, dir)
+    @items = select_questions( index, defn, 'anagrams', size, dir)
     raise "Not enough questions for #{dir}" unless @items.size >= size
 
     defn['anagrams'].each do |item|

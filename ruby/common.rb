@@ -67,11 +67,11 @@ module Common
     text.gsub( /[_\-]/, ' ')
   end
 
-  def select_questions( date, defn, key, size, path)
+  def select_questions( index, defn, key, size, path)
     raise "Not enough questions for #{path}" unless defn[key].size >= size
-    return shuffle( defn, defn[key], size) unless /^\d\d\d\d-\d\d-\d\d$/ =~ date
+    return shuffle( defn, defn[key], size) unless /^\d+$/ =~ index
 
-    items = defn[key].select {|item| item['used'].to_s == date}
+    items = defn[key].select {|item| item['used'].to_s.split( ' ').include?( index.to_s)}
     return shuffle( defn, items, size) if items.size >= size
 
     items = defn[key].select {|item| item['used'].nil?}
@@ -79,8 +79,8 @@ module Common
       chosen = shuffle( defn, items, size)
     else
       items = defn[key].sort_by do |item|
-        if m = /^(\d\d\d\d)-(\d\d)-(\d\d)$/.match( item['used'].to_s)
-          m[3].to_i + 31 * m[2].to_i + 366 * m[1].to_i
+        if item['used']
+          item['used'].split( ' ')[-1].to_i
         else
           0
         end
@@ -95,7 +95,13 @@ module Common
       end
     end
 
-    chosen.each {|item| item['used'] = date}
+    chosen.each do |item|
+      if item['used']
+        item['used'] += " #{index}"
+      else
+        item['used'] = index
+      end
+    end
     File.open( path, 'w') {|io| io.puts( defn.to_yaml)}
     chosen
   end
@@ -228,6 +234,8 @@ span.box b {color: white; text-decoration: underline}
 table.word_search td {border-width: 0px; vertical-align: top}
 table.grid td {border-width: 1px; text-align: center}
 table.hidden td {border-width: 1px; text-align: left}
+div.notes {margin-left: auto; margin-right: auto; font-size: 30px; padding-top: 20px;
+           max-width: 80%}
 </style>
 HEADER3
   end

@@ -1,7 +1,7 @@
 class Pictures
   include Common
 
-  def initialize( date, name, dir, size)
+  def initialize( index, name, dir, size)
     @meta = File.exist?( dir + '/meta.yaml') ? YAML.load( IO.read( dir + '/meta.yaml')) : {}
     @meta['pictures'] = [] unless @meta['pictures']
     @title = @meta['title'] ? @meta['title'] : ('Match the name to the picture for some ' + name)
@@ -22,7 +22,7 @@ class Pictures
       end
     end
 
-    chosen = select_questions( date, @meta, 'pictures', size, dir + '/meta.yaml')
+    chosen = select_questions( index, @meta, 'pictures', size, dir + '/meta.yaml')
     items = []
     chosen.each do |entry|
       name = entry['picture'].split('.')[0]

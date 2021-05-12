@@ -1,12 +1,12 @@
 class MissingWord
   include Common
 
-  def initialize( date, dir, size)
+  def initialize( index, dir, size)
     @title = 'Find words which can go before or after to form other words or phrases'
     defn = YAML.load( IO.read( @dir = dir))
     @title = defn['title'] if defn['title']
 
-    @items = select_questions( date, defn, 'groups', size, dir)
+    @items = select_questions( index, defn, 'groups', size, dir)
     #@items = defn['groups'].shuffle[0...size]
     raise "Not enough questions for #{dir}" unless @items.size >= size
   end

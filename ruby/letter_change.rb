@@ -1,12 +1,12 @@
 class LetterChange
   include Common
 
-  def initialize( date, name, dir, size)
+  def initialize( index, name, dir, size)
     @title = 'Change a letter and change the meaning'
     defn = YAML.load( IO.read( dir))
     @title = defn['title'] if defn['title']
     # @items = defn['phrases'].shuffle[0...size]
-    @items = select_questions( date, defn, 'words', size, dir)
+    @items = select_questions( index, defn, 'words', size, dir)
     raise "Not enough questions for #{dir}" unless @items.size >= size
   end
 

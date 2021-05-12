@@ -1,18 +1,18 @@
 class Pairs
   include Common
 
-  def initialize( date, name, dir, size)
+  def initialize( index, name, dir, size)
     @dir = dir
-    defn = YAML.load( IO.read( dir))
+    @defn = YAML.load( IO.read( dir))
 
     # chosen = defn['pairs'].shuffle[0...size]
-    chosen = select_questions( date, defn, 'pairs', size, dir)
+    chosen = select_questions( index, @defn, 'pairs', size, dir)
 
-    if defn['shuffle'] === false
+    if @defn['shuffle'] === false
       @items = []
       key    = chosen[0].keys[0]
       chosen = chosen.collect {|item| item[key]}
-      defn['pairs'].each do |item|
+      @defn['pairs'].each do |item|
         @items << item if chosen.include?( item[key])
       end
     else
@@ -22,7 +22,7 @@ class Pairs
 
     q_key, a_key = get_keys
     @title = "Work out the #{a_key} from a #{q_key} for some " + name
-    @title = defn['title'] if defn['title']
+    @title = @defn['title'] if @defn['title']
   end
 
   def generate( questions, output)
@@ -41,7 +41,11 @@ class Pairs
         generate_item( i+1, @items[i][q_key], prompts[i], answer, io)
       end
 
-      io.puts '</table></body></html>'
+      io.puts '</table>'
+      if @defn['notes']
+        io.puts "<DIV CLASS=\"notes\">#{@defn['notes']}</DIV>"
+      end
+      io.puts '</body></html>'
     end
 
     @title

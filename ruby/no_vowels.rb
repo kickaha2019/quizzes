@@ -1,12 +1,12 @@
 class NoVowels
   include Common
 
-  def initialize( date, name, dir, size)
+  def initialize( index, name, dir, size)
     @title = 'Add the missing vowels to the names of ' + name
     defn = YAML.load( IO.read( dir))
     @title = defn['title'] if defn['title']
     # @items = defn['phrases'].shuffle[0...size]
-    @items = select_questions( date, defn, 'phrases', size, dir)
+    @items = select_questions( index, defn, 'phrases', size, dir)
     raise "Not enough questions for #{dir}" unless @items.size >= size
   end
 

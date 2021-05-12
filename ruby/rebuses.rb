@@ -1,12 +1,12 @@
 class Rebuses
   include Common
 
-  def initialize( date, name, dir, size)
+  def initialize( index, name, dir, size)
     @title = 'Solve the rebuses for the names of ' + name
     defn = YAML.load( IO.read( dir))
     @title = defn['title'] if defn['title']
     # @items = defn['rebuses'].shuffle[0...size]
-    @items = select_questions( date, defn, 'rebuses', size, dir)
+    @items = select_questions( index, defn, 'rebuses', size, dir)
   end
 
   def copy_images( target_height, questions, output)

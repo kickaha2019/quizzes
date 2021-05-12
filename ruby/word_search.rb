@@ -119,8 +119,8 @@ class WordSearch
     end
   end
 
-  def initialize( date, name, dir, size)
-    @title = 'Find for the names of ' + name
+  def initialize( index, name, dir, size)
+    @title = 'Find names of ' + name
     @defn  = YAML.load( IO.read( dir))
     @title = @defn['title'] if @defn['title']
     @cell  = 75
@@ -128,7 +128,9 @@ class WordSearch
 
     unless @defn['grid']
       generate_grid( @defn, size)
-      @defn['date'] = date
+      if /^\d+$/ =~ index
+        @defn['used'] = index
+      end
       File.open( dir, 'w') {|io| io.print @defn.to_yaml}
     end
   end

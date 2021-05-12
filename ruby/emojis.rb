@@ -1,11 +1,11 @@
 class Emojis
   include Common
 
-  def initialize( date, name, dir, size)
+  def initialize( index, name, dir, size)
     @title = 'Find the words in these Emoji acrostics'
     defn = YAML.load( IO.read( dir))
     @title = defn['title'] if defn['title']
-    @items = select_questions( date, defn, 'acrostics', size, dir)
+    @items = select_questions( index, defn, 'acrostics', size, dir)
     @emojis = YAML.load( IO.read( File.dirname(dir) + '/letters.yaml'))['letters']
   end
 

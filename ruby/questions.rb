@@ -1,14 +1,14 @@
 class Questions
   include Common
 
-  def initialize( date, name, dir, size)
+  def initialize( index, name, dir, size)
     @title = 'Answer some questions about ' + name
     @dir   = dir
     defn   = YAML.load( IO.read( dir))
     @title = defn['title'] if defn['title']
 
     # @items = defn['questions'].shuffle[0...size]
-    @items = select_questions( date, defn, 'questions', size, dir)
+    @items = select_questions( index, defn, 'questions', size, dir)
   end
 
   def generate( questions, output)

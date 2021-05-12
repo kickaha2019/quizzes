@@ -31,7 +31,7 @@ class Generator
     @rebus_height = defn['rebus_height']
     @index_html   = defn['index.html']
 
-    @date = defn_file.split('/')[-1].split('.')[0]
+    @index = defn_file.split('/')[-1].split('.')[0]
     srand defn['seed'].to_i
   end
 
@@ -47,40 +47,40 @@ class Generator
 
   def generate_quiz( name, dir, questions, output)
     if /^Anagrams/ =~ dir
-      anagrams = Anagrams.new( @date, name, dir, @size)
+      anagrams = Anagrams.new( @index, name, dir, @size)
       anagrams.generate( questions, output)
     elsif /^Emojis/ =~ dir
-      emojis = Emojis.new( @date, name, dir, @size)
+      emojis = Emojis.new( @index, name, dir, @size)
       emojis.generate( questions, output)
     elsif /^LetterChange/ =~ dir
-      letter_change = LetterChange.new( @date, name, dir, @size)
+      letter_change = LetterChange.new( @index, name, dir, @size)
       letter_change.generate( questions, output)
     elsif /^MissingWord/ =~ dir
-      missing_word = MissingWord.new( @date, dir, @size)
+      missing_word = MissingWord.new( @index, dir, @size)
       missing_word.generate( questions, output)
     elsif /^NoVowels/ =~ dir
-      no_vowels = NoVowels.new( @date, name, dir, @size)
+      no_vowels = NoVowels.new( @index, name, dir, @size)
       no_vowels.generate( questions, output)
     elsif /^Pairs/ =~ dir
-      pairs = Pairs.new( @date, name, dir, @size)
+      pairs = Pairs.new( @index, name, dir, @size)
       pairs.generate( questions, output)
     elsif /^Pictures/ =~ dir
-      pictures = Pictures.new( @date, name, dir, @size)
+      pictures = Pictures.new( @index, name, dir, @size)
       pictures.generate( questions, @image_width, @image_height, output)
     elsif /^Questions/ =~ dir
-      puzzles = Questions.new( @date, name, dir, @size)
+      puzzles = Questions.new( @index, name, dir, @size)
       puzzles.generate( questions, output)
     elsif /^Rebuses/ =~ dir
-      rebuses = Rebuses.new( @date, name, dir, @size)
+      rebuses = Rebuses.new( @index, name, dir, @size)
       rebuses.generate( questions, @rebus_height, output)
     elsif /^Reveals/ =~ dir
-      reveals = Reveals.new( @date, name, dir, @size)
+      reveals = Reveals.new( @index, name, dir, @size)
       reveals.generate( questions, @image_width, @image_height, output)
     elsif /^Sequences/ =~ dir
-      sequences = Sequences.new( @date, name, dir, @size)
+      sequences = Sequences.new( @index, name, dir, @size)
       sequences.generate( questions, output)
     elsif /^WordSearch/ =~ dir
-      word_search = WordSearch.new( @date, name, dir, @size)
+      word_search = WordSearch.new( @index, name, dir, @size)
       word_search.generate( questions, output)
     else
       raise "Unhandled puzzle: #{dir}"
@@ -105,7 +105,7 @@ th, td {padding: 15px; font-size: 40px}
 <table>
 HEADER
       @subjects.each_index do |i|
-        name = prettify( @subjects[i].split('/')[-1].split('.')[0]).gsub( ' ', '&nbsp;')
+        name = subject_name( @subjects[i])
         io.puts "<tr><td><a href=\"#{@chaos[i]}.html\">#{name}</a></td>"
         desc = generate_quiz( name.downcase, @subjects[i], @chaos[i], output)
         io.puts "<td>#{desc}</td>"
@@ -121,6 +121,14 @@ HEADER
       @chaos << r unless @chaos.index(r)
     end
     #p @chaos
+  end
+
+  def subject_name( subject)
+    if /\.yaml$/ =~ subject
+      defn = YAML.load( IO.read( subject))
+      return defn['name'] if defn['name']
+    end
+    prettify( subject.split('/')[-1].split('.')[0]).gsub( ' ', '&nbsp;')
   end
 end
 

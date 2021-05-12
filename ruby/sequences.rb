@@ -1,7 +1,7 @@
 class Sequences
   include Common
 
-  def initialize( date, name, dir, size)
+  def initialize( index, name, dir, size)
     @dir  = dir
     @meta = YAML.load( IO.read( dir + '/script.yaml'))
     @meta['pictures'] = [] unless @meta['pictures']
@@ -18,6 +18,13 @@ class Sequences
         unless known_images[name]
           @meta['pictures'] << {'picture' => name}
         end
+      end
+    end
+
+    if /^\d+$/ =~ index
+      unless @meta['used'].to_s == index.to_s
+        @meta['used'] = index
+        File.open( dir + '/script.yaml', 'w') {|io| io.print @meta.to_yaml}
       end
     end
   end
