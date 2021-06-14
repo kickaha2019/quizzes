@@ -1,8 +1,22 @@
 require 'yaml'
 
+def used( items)
+#  return items['used'].to_s if items['used']
+  used = ''
+  items.select do |item|
+    if item['used']
+      used = used + ' ' + item['used'].to_s
+    end
+  end
+  used
+end
+
 def last_used( items)
-  items.select {|item| item['used']}.inject( nil) do |r,i|
-    (r.nil? || (r < i['used'].to_s)) ? i['used'].to_s : r
+  indexes = used( items).split( ' ')
+  return nil if indexes.empty?
+
+  indexes.inject( 0) do |r,i|
+    (r < i.to_i) ? i.to_i : r
   end
 end
 

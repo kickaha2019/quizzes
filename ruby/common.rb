@@ -80,7 +80,7 @@ module Common
     else
       items = defn[key].sort_by do |item|
         if item['used']
-          item['used'].split( ' ')[-1].to_i
+          item['used'].to_s.split( ' ')[-1].to_i
         else
           0
         end
@@ -97,7 +97,7 @@ module Common
 
     chosen.each do |item|
       if item['used']
-        item['used'] += " #{index}"
+        item['used'] = item['used'].to_s + " #{index}" unless item['used'].to_s.split(' ').include?( index.to_s)
       else
         item['used'] = index
       end
