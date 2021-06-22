@@ -192,8 +192,7 @@ HEADER2
   100% {opacity: 0}
 }
 div.number {font-weight: bold; font-size: 24px; padding-bottom: 5px;}
-div.item {border: solid 1px black; margin: 10px; padding: 10px; display: inline-block;
-          max-width: 360px}
+div.item {border: solid 1px black; margin: 10px; padding: 10px; display: inline-block;}
 div.overlaid {position: absolute; top: -20px; left: -20px; 
               margin: 10px; padding: 10px; 
 }
