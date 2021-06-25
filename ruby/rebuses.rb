@@ -31,10 +31,11 @@ HEADER
   end
   
   def generate_question( index, rebus, answer, questions, io)
-    io.puts "<div class=\"rebus\">"
+    answer = "##{index}:&nbsp;" + answer
+    io.puts "<div class=\"rebus\" style=\"min-width: #{10 * answer.size}\">"
     generate_rebus( rebus, questions, io)
     io.print '<div class="overlaid">'
-    write_clue_answer( index, "##{index}", "##{index}:&nbsp;" + answer, io)
+    write_clue_answer( index, "##{index}", answer, io)
     io.puts "</div></div>"
   end
   

@@ -64,7 +64,7 @@ module Common
   end
   
   def prettify( text)
-    text.gsub( /[_\-]/, ' ')
+    text.gsub( /[_\-\+]/, ' ')
   end
 
   def select_questions( index, defn, key, size, path)
@@ -87,7 +87,7 @@ module Common
       end
 
       if items.size > 2 * size
-        chosen = shuffle( defn, items.size[0...(items.size/2)], size)
+        chosen = shuffle( defn, items[0...(items.size/2)], size)
       elsif items.size < size
         raise "Not enough questions for #{path}"
       else

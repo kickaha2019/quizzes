@@ -15,11 +15,14 @@ require 'yaml'
 class MysteryManorQuiz
   def load_round( dir, index)
     if File.directory?( dir)
+      @title = prettify( dir.split('/')[-1])
       defn = YAML.load( IO.read( dir + '/meta.yaml'))
+      @title = defn['title'] if defn['title']
+
       if defn['pictures']
         @answers = []
         @items = defn['pictures'].select {|pic| was_used( pic, index)}.collect do |pic|
-          @answers << pic['picture'].gsub(/[_\-]/, ' ')
+          @answers << prettify( pic['picture'])
           {'picture' => (dir + '/' + pic['picture'])}
         end
         @hints = @answers.sort
@@ -36,12 +39,10 @@ class MysteryManorQuiz
   end
 
   def output_answers( io)
-    io.puts "\nANSWERS\n"
-    io.puts '[list=1]'
-    @answers.each do |answer|
-      io.puts "[*]#{answer}"
+    io.puts "index\tanswer\tgot"
+    @answers.each_index do |index|
+      io.puts "#{index+1}\t#{@answers[index]}\t"
     end
-    io.puts '[/list]'
   end
 
   def output_hints( io)
@@ -54,6 +55,15 @@ class MysteryManorQuiz
     io.puts '[/list]'
   end
 
+  def output_prompt( io)
+    prompt = <<PROMPT
+Please put your answers in this thread, and please limit the answers to be one answer per person each day
+to allow everyone to join in. Any questions either put in this thread or PM me.
+PROMPT
+    io.puts prompt.gsub( "\n", ' ')
+    io.puts
+  end
+
   def output_questions( mm_quiz, io)
     io.puts "QUESTIONS\n"
     pictures = @items.first['picture']
@@ -61,13 +71,22 @@ class MysteryManorQuiz
     @items.each_index do |index|
       item = @items[index]
       if item['picture']
-        io.puts "[size=200]##{index+1}:[/size]"
+        io.puts "\n[size=200]##{index+1}:[/size]"
         io.puts "[img]https://mysterymanor.net/Kickaha/#{item['scaled']}[/img]"
       else
         raise "Don't know how to output question for #{dir}"
       end
     end
     io.puts '[/list]' unless pictures
+  end
+
+  def output_title( io)
+    io.puts @title
+    io.puts
+  end
+
+  def prettify( text)
+    text.gsub( /[_\-]/, ' ')
   end
 
   def scale_images( target_width, target_height, mm_index, output)
@@ -122,8 +141,14 @@ srand 1037
 bbc = MysteryManorQuiz.new
 bbc.load_round( ARGV[0], ARGV[1])
 bbc.scale_images( ARGV[2].to_i, ARGV[3].to_i, ARGV[4].to_i, ARGV[5])
-File.open( ARGV[5] + '/round.txt', 'w') do |io|
+
+File.open( ARGV[5] + "/Quiz#{ARGV[4]}.txt", 'w') do |io|
+  bbc.output_title( io)
+  bbc.output_prompt( io)
   bbc.output_questions( ARGV[4].to_i, io)
   bbc.output_hints( io)
+end
+
+File.open( ARGV[5] + "/Quiz#{ARGV[4]}.csv", 'w') do |io|
   bbc.output_answers( io)
 end
