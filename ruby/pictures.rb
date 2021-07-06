@@ -4,6 +4,7 @@ class Pictures
   def initialize( index, name, dir, size)
     @meta = File.exist?( dir + '/meta.yaml') ? YAML.load( IO.read( dir + '/meta.yaml')) : {}
     @meta['pictures'] = [] unless @meta['pictures']
+    @multiple_choice = @meta['multiple_choice']
     @title = @meta['title'] ? @meta['title'] : ('Match the name to the picture for some ' + name)
 
     known_images = {}
@@ -22,16 +23,27 @@ class Pictures
       end
     end
 
+    @all_titles = @meta['pictures'].collect {|pic| title(pic)}
+
     chosen = select_questions( index, @meta, 'pictures', size, dir + '/meta.yaml')
     items = []
     chosen.each do |entry|
       name = entry['picture'].split('.')[0]
-      items << {:title => entry['title'] ? entry['title'] : prettify( entry['picture']),
-                :image => dir + '/' + name2images[entry['picture']]}
+      items << {:title  => title(entry),
+                :image  => dir + '/' + name2images[entry['picture']],
+                :options => entry['options']}
     end
 
     @items = items.shuffle[0...size]
     @items.each_index {|i| @items[i][:index] = i}
+
+    if @multiple_choice
+      @options = @items.collect do |item|
+        t = item[:title]
+        alts = item[:options] ? item[:options].split('|') : (@all_titles - [t])
+        ([t] + alts.shuffle[0..(@multiple_choice-2)]).shuffle
+      end
+    end
   end
 
   def copy_images( target_width, target_height, questions, output)
@@ -45,6 +57,9 @@ class Pictures
     if @meta['large']
       image_width  = (image_width * 3).to_i
       image_height = (image_height * 3).to_i
+    elsif @multiple_choice
+      image_width  = (image_width * 3).to_i
+      image_height = (image_height * 3).to_i
     elsif @meta['table']
       image_width  = (image_width * 0.66).to_i
       image_height = (image_height * 0.66).to_i
@@ -52,6 +67,31 @@ class Pictures
     copy_images( image_width, image_height, questions, output)
     generate_questions( questions, output)
     @title
+  end
+
+  def generate_answer( index, answer)
+    if @multiple_choice
+      key = ''
+      @options[index].each_index do |i|
+        key = "ABCDEF"[i..i] if @options[index][i] == answer
+      end
+      key + ': ' + answer
+    else
+      answer
+    end
+  end
+
+  def generate_clue( index, clue)
+    return '' if @meta['hide_answers']
+    if @multiple_choice
+      text = []
+      @options[index].each_index do |i|
+        text << ("ABCDEF"[i..i] + ': ' + @options[index][i])
+      end
+      text.join( '<BR>')
+    else
+      (clue[:title] + '?')
+    end
   end
 
   def generate_header( io)
@@ -79,19 +119,30 @@ HEADER
         write_image( clue,  "c#{index+1}", 'clue', questions, io)
       else
         write_clue_answer( index+1,
-                           @meta['hide_answers'] ? (clue[:title] + '?') : '',
-                           item[:title],
+                           generate_clue( index, clue),
+                           generate_answer( index, item[:title]),
                            io)
       end
       io.puts "</td></tr>"
     else
       io.puts "<div class=\"item\"><div class=\"number\">##{index+1} "
-      write_clue_answer( index+1,
-                         @meta['hide_answers'] ? '' : (clue[:title] + '?'),
-                         item[:title],
-                         io)
+      unless @multiple_choice
+        write_clue_answer( index+1,
+                           generate_clue( index, clue),
+                           generate_answer( index, item[:title]),
+                           io)
+      end
       io.puts "</div>"
-      io.puts "<img src=\"#{questions}-#{index}.#{item[:image].split('.')[-1]}\"></div>"
+      io.puts "<img src=\"#{questions}-#{index}.#{item[:image].split('.')[-1]}\">"
+      if @multiple_choice
+        io.puts "<div class=\"number\">"
+        write_clue_answer( index+1,
+                           generate_clue( index, clue),
+                           generate_answer( index, item[:title]),
+                           io)
+        io.puts "</div>"
+      end
+      io.puts "</div>"
     end
   end
   
@@ -112,6 +163,10 @@ HEADER
 
   def prepare_images
     @items.each {|item| prepare_image( item)}
+  end
+
+  def title( entry)
+    entry['title'] ? entry['title'] : prettify( entry['picture'])
   end
 
   def write_image( item, id, clazz, questions, io)

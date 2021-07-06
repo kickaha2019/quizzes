@@ -21,7 +21,7 @@ class MysteryManorQuiz
 
       if defn['pictures']
         @answers = []
-        @items = defn['pictures'].select {|pic| was_used( pic, index)}.collect do |pic|
+        @items = defn['pictures'].shuffle.select {|pic| was_used( pic, index)}.collect do |pic|
           @answers << prettify( pic['picture'])
           {'picture' => (dir + '/' + pic['picture'])}
         end
@@ -30,11 +30,21 @@ class MysteryManorQuiz
         raise "Don't know how to load #{dir}/meta.yaml"
       end
     else
-      raise "Don't know how to load #{dir}"
+      @title = prettify( dir.split(/[\.\/]/)[-1])
+      defn = YAML.load( IO.read( dir))
+      @title = defn['title'] if defn['title']
+
+      if defn['questions']
+        @items = defn['questions'].shuffle.select {|item| was_used( item, index)}.shuffle
+        @answers = @items.collect {|item| item['answer']}
+        @hints = @answers.sort
+      else
+        raise "Don't know how to load #{dir}"
+      end
     end
 
     raise "No items found for #{dir} / #{index}" if @items.empty?
-    @items.shuffle!
+#    @items.shuffle!
 #    p @items
   end
 
@@ -58,7 +68,7 @@ class MysteryManorQuiz
   def output_prompt( io)
     prompt = <<PROMPT
 Please put your answers in this thread, and please limit the answers to be one answer per person each day
-to allow everyone to join in. Any questions either put in this thread or PM me.
+to start with to allow everyone to join in. Any questions either put in this thread or PM me.
 PROMPT
     io.puts prompt.gsub( "\n", ' ')
     io.puts
@@ -73,6 +83,8 @@ PROMPT
       if item['picture']
         io.puts "\n[size=200]##{index+1}:[/size]"
         io.puts "[img]https://mysterymanor.net/Kickaha/#{item['scaled']}[/img]"
+      elsif item['question']
+        io.puts "[*]#{item['question']}"
       else
         raise "Don't know how to output question for #{dir}"
       end
