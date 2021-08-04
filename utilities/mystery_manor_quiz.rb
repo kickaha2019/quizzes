@@ -20,6 +20,7 @@ class MysteryManorQuiz
       @title = defn['title'] if defn['title']
 
       if defn['pictures']
+        @type   = :pictures
         @answers = []
         @items = defn['pictures'].shuffle.select {|pic| was_used( pic, index)}.collect do |pic|
           @answers << prettify( pic['picture'])
@@ -34,10 +35,17 @@ class MysteryManorQuiz
       defn = YAML.load( IO.read( dir))
       @title = defn['title'] if defn['title']
 
-      if defn['questions']
-        @items = defn['questions'].shuffle.select {|item| was_used( item, index)}.shuffle
+      if defn['pairs']
+        @type    = :pairs
+        @keys    = defn['pairs'][0].keys
+        @items   = defn['pairs'].shuffle.select {|item| was_used( item, index)}.shuffle
+        @answers = @items.collect {|item| item[@keys[1]]}
+        @hints   = @answers.sort
+      elsif defn['questions']
+        @type    = :questions
+        @items   = defn['questions'].shuffle.select {|item| was_used( item, index)}.shuffle
         @answers = @items.collect {|item| item['answer']}
-        @hints = @answers.sort
+        @hints   = @answers.sort
       else
         raise "Don't know how to load #{dir}"
       end
@@ -75,15 +83,17 @@ PROMPT
   end
 
   def output_questions( mm_quiz, io)
-    io.puts "QUESTIONS\n"
+    #io.puts "QUESTIONS\n"
     pictures = @items.first['picture']
     io.puts '[list=1]' unless pictures
     @items.each_index do |index|
       item = @items[index]
-      if item['picture']
+      if @type == :pairs
+        io.puts "[*]#{item[@keys[0]]}"
+      elsif @type == :pictures
         io.puts "\n[size=200]##{index+1}:[/size]"
         io.puts "[img]https://mysterymanor.net/Kickaha/#{item['scaled']}[/img]"
-      elsif item['question']
+      elsif @type == :questions
         io.puts "[*]#{item['question']}"
       else
         raise "Don't know how to output question for #{dir}"
