@@ -46,7 +46,7 @@ class MysteryManorQuiz
       elsif defn['questions']
         @type    = :questions
         @items   = defn['questions'].shuffle.select {|item| was_used( item, index)}.shuffle
-        @answers = @items.collect {|item| item['answer']}
+        @answers = @items.collect {|item| item['answer'].to_s}
         @hints   = @answers.sort
       elsif defn['rebuses']
         @type    = :rebuses
@@ -152,7 +152,7 @@ PROMPT
       raise "Error scaling #{picture}"
     end
 
-    (output + ext)
+    (output + ext).split('/')[-1]
   end
 
   def scale_images( target_width, target_height, mm_index, output)
@@ -167,7 +167,12 @@ PROMPT
         parts = []
 
         item['rebus'].split( /\s/).each do |element|
-          if /^[a-z]*$/i =~ element
+          if '@' == element
+            parts << scale_image( @dir + '/symbols/spin.jpg',
+                                  1000,
+                                  target_height,
+                                  "/tmp/#{parts.size}")
+          elsif /^[a-z]*$/i =~ element
             parts << scale_image( @dir + '/images/' + element + '.jpg',
                                   1000,
                                   target_height,

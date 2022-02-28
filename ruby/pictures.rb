@@ -54,7 +54,10 @@ class Pictures
 
   def generate( questions, image_width, image_height, output)
     prepare_images
-    if @meta['large']
+    if @meta['image_width']
+      image_width  = @meta['image_width']
+      image_height = @meta['image_height']
+    elsif @meta['large']
       image_width  = (image_width * 3).to_i
       image_height = (image_height * 3).to_i
     elsif @multiple_choice

@@ -40,7 +40,7 @@ module Common
 
   def maximum_text_width( texts)
     w = 20 * texts.inject(0) {|v,i| (v < i.to_s.size) ? i.to_s.size : v}
-    (w < 700) ? w : 700
+    (w < 1000) ? w : 1000
   end
 
   def prepare_image( item)

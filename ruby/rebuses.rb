@@ -56,6 +56,8 @@ HEADER
       separ = '&nbsp;'
       if /^\+/ =~ word
         io.print "<span class=\"rebus plus\">#{word[1..-1].upcase}</span>"
+      elsif '@' == word
+        io.print "<span class=\"rebus plus\">&cudarrl;</span>"
       elsif /^\-/ =~ word
         #image = @images['-elide']
         #io.print "<div><span class=\"plus\">#{word[1..-1]}</span><img class=\"minus\" src=\"#{questions}-#{image[:index]}.png\"></div>"
@@ -85,7 +87,7 @@ HEADER
 
     @items.each do |item|
       item['rebus'].split( /\s+/).each do |word|
-        unless (/[\-\+\>]/ =~ word) || (/^_/ =~ word) || @images[word]
+        unless (/[\-\+\>@]/ =~ word) || (/^_/ =~ word) || @images[word]
           @images[word] = {:image => 'rebuses/images/' + word.capitalize + '.jpg',
                            :index => @images.size}
         end
