@@ -20,3 +20,6 @@ WordSearch
 *.numbers
 mystery_manor
 .tool-versions
+*.m4a
+*.mp3
+meta.yaml

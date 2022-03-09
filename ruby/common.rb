@@ -143,6 +143,7 @@ ITEM
     io.puts <<"HEADER1"
 <script>
     let item = #{from};
+    var audio = null;
 
     function hide( eid) {
       document.getElementById( eid).style.display = 'none';
@@ -157,6 +158,14 @@ ITEM
       document.getElementById( "a" + item).style.display = 'inline';
       document.getElementById( "a" + item).style.opacity = 1;
       item = item + 1;
+    }
+
+    function play_sound( path) {
+      if ( audio ) {
+        audio.pause();
+      }
+      audio = new Audio(path);
+      audio.play();
     }
 
     function reveal() {

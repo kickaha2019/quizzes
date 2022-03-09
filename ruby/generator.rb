@@ -17,6 +17,7 @@ require 'questions.rb'
 require 'rebuses.rb'
 require 'reveals.rb'
 require 'sequences.rb'
+require 'sounds.rb'
 require 'word_search'
 
 class Generator
@@ -79,6 +80,9 @@ class Generator
     elsif /^Sequences/ =~ dir
       sequences = Sequences.new( @index, name, dir, @size)
       sequences.generate( questions, output)
+    elsif /^Sounds/ =~ dir
+      sounds = Sounds.new( @index, name, dir, @size)
+      sounds.generate( questions, output)
     elsif /^WordSearch/ =~ dir
       word_search = WordSearch.new( @index, name, dir, @size)
       word_search.generate( questions, output)
