@@ -160,7 +160,10 @@ ITEM
       item = item + 1;
     }
 
-    function play_sound( path) {
+    function play_sound( count, index, path) {
+      for (var i = 1; i <= count; i++) {
+        document.getElementById( "mark" + i).style.visibility = (index == i) ? 'visible' : 'hidden';
+      }
       if ( audio ) {
         audio.pause();
       }
@@ -232,6 +235,7 @@ span.minus {position: relative; left: -72px; color: red; font-weight: normal}
 div.rebus {border: solid 1px black; margin: 10px; padding: 10px; 
            display: flex; flex-direction: row; position: relative; 
            align-items: center; justify-content: middle}
+div.rebus_text {font-size: 60px; height: 120px; line-height: 120px}
 div.minus {display: inline-block; width: 72px}
 td:first-child {text-align: center}
 .answer {display: none; opacity: 0}
@@ -244,6 +248,7 @@ table.grid td {border-width: 1px; text-align: center}
 table.hidden td {border-width: 1px; text-align: left}
 div.notes {margin-left: auto; margin-right: auto; font-size: 30px; padding-top: 20px;
            max-width: 80%}
+.playing {visibility: hidden}
 </style>
 HEADER3
   end

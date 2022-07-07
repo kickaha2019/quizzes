@@ -9,6 +9,7 @@ class Sounds
     @multiple_choice = @meta['multiple_choice']
     @title = @meta['title'] ? @meta['title'] : ('Match the name to the sound for some ' + name)
     @product = @meta['product'] ? @meta['product'] : name
+    @track = @meta['track'] ? @meta['track'] : 'Clip'
 
     known_audios = {}
     @meta['sounds'].each do |known|
@@ -17,7 +18,7 @@ class Sounds
 
     name2audios = {}
     Dir.entries( dir).each do |f|
-      if m = /^(.*)_snippet\.mp3/i.match(f)
+      if m = /^(.*)\.mp3/i.match(f)
         name = m[1].gsub( ' ', '_')
         name2audios[name] = f
         unless known_audios[name]
@@ -65,12 +66,14 @@ class Sounds
   def generate_header( io)
     write_header( @title, 1, @items.size, io)
     io.puts <<"HEADER"
-<table><tr><th>#</th><th>#{@product}</th><th>Theme</th></tr>
+<table><tr><th>#</th><th>#{@product}</th><th>#{@track}</th></tr>
 HEADER
   end
   
-  def generate_item( item, index, clue, questions, io)
-    io.puts "<tr><td>#{index+1}</td><td>"
+  def generate_item( item, index, io)
+    io.puts <<"INDEX"
+<tr><td>#{index+1}</td><td>
+INDEX
     write_clue_answer( index+1,
                        "???",
                        item[:title],
@@ -87,7 +90,7 @@ HEADER
       clues = shuffle_answers( @items)
 
       @items.each_index do |i|
-        generate_item( @items[i], i, clues[i], questions, io)
+        generate_item( @items[i], i, io)
       end
 
       io.puts( '</table>')
@@ -101,9 +104,9 @@ HEADER
 
   def write_audio( item, io)
     io.puts <<"AUDIO_BUTTON"
-<button class="audio" onclick="play_sound( '#{item[:output]}')">
+<button class="audio" onclick="play_sound( #{@items.size}, #{item[:index]+1}, '#{item[:output]}')">
 Play
-</button>
+</button> <span class="playing" id="mark#{item[:index]+1}">&sung;</span>
 AUDIO_BUTTON
   end
 end

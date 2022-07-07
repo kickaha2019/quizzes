@@ -39,7 +39,7 @@ class Generator
   def empty_output_area( output)
     to_delete = []
     Dir.entries( output).each do |f|
-      to_delete << f if /\.(jpg|jpeg|png|html|csv)$/ =~ f
+      to_delete << f if /\.(jpg|jpeg|png|html|csv|mp3)$/ =~ f
     end
     to_delete.each do |f|
       File.delete( output + '/' + f)

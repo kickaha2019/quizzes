@@ -50,6 +50,11 @@ HEADER
   end
 
   def generate_rebus( rebus, questions, io)
+    if /^'.*'$/ =~ rebus
+      io.print "<div class=\"rebus_text\">#{rebus[1..-2]}</div>"
+      return
+    end
+
     separ = ''
     rebus.split( /\s+/).each do |word|
       io.print separ
@@ -58,6 +63,8 @@ HEADER
         io.print "<span class=\"rebus plus\">#{word[1..-1].upcase}</span>"
       elsif '@' == word
         io.print "<span class=\"rebus plus\">&cudarrl;</span>"
+      elsif /^&/ =~ word
+        io.print "<span class=\"rebus plus\">#{word}</span>"
       elsif /^\-/ =~ word
         #image = @images['-elide']
         #io.print "<div><span class=\"plus\">#{word[1..-1]}</span><img class=\"minus\" src=\"#{questions}-#{image[:index]}.png\"></div>"
@@ -86,8 +93,9 @@ HEADER
     @images['-becomes'] = {image:'rebuses/becomes.jpg', index:1}
 
     @items.each do |item|
+      next if /^'/ =~ item['rebus']
       item['rebus'].split( /\s+/).each do |word|
-        unless (/[\-\+\>@]/ =~ word) || (/^_/ =~ word) || @images[word]
+        unless (/[\-\+\>@]/ =~ word) || (/^(&|_)/ =~ word) || @images[word]
           @images[word] = {:image => 'rebuses/images/' + word.capitalize + '.jpg',
                            :index => @images.size}
         end
