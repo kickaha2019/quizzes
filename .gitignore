@@ -23,3 +23,5 @@ mystery_manor
 *.m4a
 *.mp3
 meta.yaml
+*.wav
+*.ogg
