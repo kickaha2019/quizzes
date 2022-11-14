@@ -161,6 +161,8 @@ PROMPT
       if item['picture']
         ext = '.jpg'
         ext = '.jpeg' unless File.exist?( item['picture'] + ext)
+        ext = '.gif'  unless File.exist?( item['picture'] + ext)
+        ext = '.png'  unless File.exist?( item['picture'] + ext)
         scaled = output + "/Quiz#{mm_index}#{"ABCDEFGHIJKL"[index..index]}"
         item['scaled'] = scale_image( item['picture'] + ext, target_width, target_height, scaled)
       elsif item['rebus']

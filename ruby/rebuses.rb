@@ -82,7 +82,11 @@ HEADER
         io.print "<span class=\"rebus plus\">&nbsp;</span>"
       else
         image = @images[word]
-        io.print "<img src=\"#{questions}-#{image[:index]}.jpg\">"
+        if image
+          io.print "<img src=\"#{questions}-#{image[:index]}.jpg\">"
+        else
+          raise "*** Unknown image: #{word}"
+        end
       end
     end
   end
