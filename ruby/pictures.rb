@@ -14,7 +14,7 @@ class Pictures
 
     name2images = {}
     Dir.entries( dir).each do |f|
-      if /\.(jpg|png|jpeg|gif)$/i =~ f
+      if /\.(jpg|png|jpeg|gif|webp)$/i =~ f
         name = f.split('.')[0].gsub( ' ', '_')
         name2images[name] = f
         unless known_images[name]

@@ -1,6 +1,7 @@
 #
 # Useful methods
 #
+require "vips"
 require 'yaml'
 
 module Common
@@ -16,9 +17,18 @@ module Common
       h = target_height
       w = image_width * (target_height * 1.0) / image_height
     end
-    if ! system( "/bin/csh scale.csh #{item[:image]} #{output}/#{item[:output]} #{w.to_i} #{h.to_i}")
-      raise "Error scaling #{item[:image]}"
+
+    im = Vips::Image.thumbnail( item[:image], w, height: h, auto_rotate: true)
+    sink = output + '/' + item[:output]
+    if /\.webp$/ =~ sink
+      im.write_to_file( sink, Q: 65, effort: 6, mixed: true, strip: true)
+    else
+      im.write_to_file( sink, compression: 9, Q: 65, effort: 10, strip: true)
     end
+
+    # if ! system( "/bin/csh scale.csh #{item[:image]} #{output}/#{item[:output]} #{w.to_i} #{h.to_i}")
+    #   raise "Error scaling #{item[:image]}"
+    # end
   end
 
   def get_common_prefix( s1, s2)
@@ -44,23 +54,26 @@ module Common
   end
 
   def prepare_image( item)
-    if not system( "sips -g pixelHeight -g pixelWidth -g orientation " + item[:image] + " >/tmp/sips.log")
-      raise "Error running sips on: " + item[:image]
-    end
-    
-    h,w = 0,0
-    IO.readlines( "/tmp/sips.log").each do |line|
-      if m = /pixelHeight: (\d*)$/.match( line.chomp)
-        h = m[1].to_i
-      end
-      if m = /pixelWidth: (\d*)$/.match( line.chomp)
-        w = m[1].to_i
-      end
-    end
-    
-    raise "Bad image file: #{item[:image]}" unless w * h > 0
-    item[:width]  = w
-    item[:height] = h
+    im     = Vips::Image.new_from_file item[:image], access: :sequential
+    item[:width]  = im.get('width')
+    item[:height] = im.get('height')
+    # if not system( "sips -g pixelHeight -g pixelWidth -g orientation " + item[:image] + " >/tmp/sips.log")
+    #   raise "Error running sips on: " + item[:image]
+    # end
+    #
+    # h,w = 0,0
+    # IO.readlines( "/tmp/sips.log").each do |line|
+    #   if m = /pixelHeight: (\d*)$/.match( line.chomp)
+    #     h = m[1].to_i
+    #   end
+    #   if m = /pixelWidth: (\d*)$/.match( line.chomp)
+    #     w = m[1].to_i
+    #   end
+    # end
+    #
+    # raise "Bad image file: #{item[:image]}" unless w * h > 0
+    #item[:width]  = w
+    #item[:height] = h
   end
   
   def prettify( text)

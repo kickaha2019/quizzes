@@ -10,26 +10,32 @@
 #   Output folder
 #
 
+require "vips"
 require 'yaml'
 
 class MysteryManorQuiz
   def load_round( dir, index)
     if File.directory?( dir)
       @title = prettify( dir.split('/')[-1])
+      if /^Pictures/ =~ dir
+        update_picture_meta( dir)
+      else
+        raise "Don't know how to process #{dir}"
+      end
+
       defn = YAML.load( IO.read( dir + '/meta.yaml'))
       @title = defn['title'] if defn['title']
       @dir   = dir
 
       if defn['pictures']
+        update_picture_meta( dir)
         @type   = :pictures
         @answers = []
-        @items = defn['pictures'].shuffle.select {|pic| was_used( pic, index)}.collect do |pic|
+        @items = select_for_index( defn['pictures'], index, defn, dir + '/meta.yaml').collect do |pic|
           @answers << prettify( pic['picture'])
           {'picture' => (dir + '/' + pic['picture'])}
         end
         @hints = @answers.sort
-      else
-        raise "Don't know how to load #{dir}/meta.yaml"
       end
     else
       @title = prettify( dir.split(/[\.\/]/)[-1])
@@ -37,20 +43,26 @@ class MysteryManorQuiz
       @title = defn['title'] if defn['title']
       @dir   = File.dirname(dir)
 
-      if defn['pairs']
+      if defn['anagrams']
+        @type    = :anagrams
+        @keys    = defn['anagrams'][0].keys
+        @items   = select_for_index( defn['anagrams'], index, defn, dir)
+        @answers = @items.collect {|item| item[@keys[1]]}
+        @hints   = @answers.sort
+      elsif defn['pairs']
         @type    = :pairs
         @keys    = defn['pairs'][0].keys
-        @items   = defn['pairs'].shuffle.select {|item| was_used( item, index)}.shuffle
+        @items   = select_for_index( defn['pairs'], index, defn, dir)
         @answers = @items.collect {|item| item[@keys[1]]}
         @hints   = @answers.sort
       elsif defn['questions']
         @type    = :questions
-        @items   = defn['questions'].shuffle.select {|item| was_used( item, index)}.shuffle
+        @items   = select_for_index( defn['questions'], index, defn, dir)
         @answers = @items.collect {|item| item['answer'].to_s}
         @hints   = @answers.sort
       elsif defn['rebuses']
         @type    = :rebuses
-        @items   = defn['rebuses'].shuffle.select {|item| was_used( item, index)}.shuffle
+        @items   = select_for_index( defn['rebuses'], index, defn, dir)
         @answers = @items.collect {|item| item['answer']}
         @hints   = @answers.sort
       else
@@ -95,7 +107,9 @@ PROMPT
     io.puts '[list=1]' unless pictures
     @items.each_index do |index|
       item = @items[index]
-      if @type == :pairs
+      if @type == :anagrams
+        io.puts "[*]#{item[@keys[0]]}"
+      elsif @type == :pairs
         io.puts "[*]#{item[@keys[0]]}"
       elsif @type == :pictures
         io.puts "\n[size=200]##{index+1}:[/size]"
@@ -124,21 +138,24 @@ PROMPT
   def scale_image( picture, target_width, target_height, output)
     ext = picture.match( /(\..*)$/)[1]
 
-    if not system( "sips -g pixelHeight -g pixelWidth -g orientation " + picture + " >/tmp/sips.log")
-      raise "Error running sips on: " + item[:image]
-    end
-
-    image_height,image_width = 0,0
-    IO.readlines( "/tmp/sips.log").each do |line|
-      if m = /pixelHeight: (\d*)$/.match( line.chomp)
-        image_height = m[1].to_i
-      end
-      if m = /pixelWidth: (\d*)$/.match( line.chomp)
-        image_width = m[1].to_i
-      end
-    end
-
-    raise "Bad image file: #{picture}" unless image_width * image_height > 0
+    im = Vips::Image.new_from_file picture, access: :sequential
+    image_width  = im.get('width')
+    image_height = im.get('height')
+    # if not system( "sips -g pixelHeight -g pixelWidth -g orientation " + picture + " >/tmp/sips.log")
+    #   raise "Error running sips on: " + item[:image]
+    # end
+    #
+    # image_height,image_width = 0,0
+    # IO.readlines( "/tmp/sips.log").each do |line|
+    #   if m = /pixelHeight: (\d*)$/.match( line.chomp)
+    #     image_height = m[1].to_i
+    #   end
+    #   if m = /pixelWidth: (\d*)$/.match( line.chomp)
+    #     image_width = m[1].to_i
+    #   end
+    # end
+    #
+    # raise "Bad image file: #{picture}" unless image_width * image_height > 0
 
     if (target_width * 1.0) / image_width < (target_height * 1.0) / image_height
       w = target_width
@@ -148,9 +165,17 @@ PROMPT
       w = image_width * (target_height * 1.0) / image_height
     end
 
-    if ! system( "/bin/csh scale.csh #{picture} #{output}#{ext} #{w.to_i} #{h.to_i}")
-      raise "Error scaling #{picture}"
+    im = Vips::Image.thumbnail( picture, w, height: h, auto_rotate: true)
+    sink = output + ext
+    if /\.webp$/ =~ sink
+      im.write_to_file( sink, Q: 65, effort: 6, mixed: true, strip: true)
+    else
+      im.write_to_file( sink, compression: 9, Q: 65, effort: 10, strip: true)
     end
+
+    # if ! system( "/bin/csh scale.csh #{picture} #{output}#{ext} #{w.to_i} #{h.to_i}")
+    #   raise "Error scaling #{picture}"
+    # end
 
     (output + ext).split('/')[-1]
   end
@@ -163,6 +188,7 @@ PROMPT
         ext = '.jpeg' unless File.exist?( item['picture'] + ext)
         ext = '.gif'  unless File.exist?( item['picture'] + ext)
         ext = '.png'  unless File.exist?( item['picture'] + ext)
+        ext = '.webp' unless File.exist?( item['picture'] + ext)
         scaled = output + "/Quiz#{mm_index}#{"ABCDEFGHIJKL"[index..index]}"
         item['scaled'] = scale_image( item['picture'] + ext, target_width, target_height, scaled)
       elsif item['rebus']
@@ -212,6 +238,53 @@ PROMPT
                      parts.join( ' '))
           raise "Error merging to #{picture}"
         end
+      end
+    end
+  end
+
+  def select_for_index( items, index, defn, path)
+    chosen = items.shuffle.select {|item| was_used( item, index)}
+    return chosen if chosen.size == 10
+
+    unless chosen.empty?
+      raise "Not enough items for index #{index}"
+    end
+
+    unused = items.select {|item| ! item['used']}
+    if unused.size < 10
+      raise 'Not enough unused items'
+    end
+
+    unused = unused.shuffle[0..9]
+    unused.each do |item|
+      item['used'] = index.to_s
+    end
+
+    File.open( path, 'w') do |io|
+      io.puts defn.to_yaml
+    end
+    return unused
+  end
+
+  def update_picture_meta( dir)
+    meta = {'pictures' => []}
+    if File.exist?( dir + '/meta.yaml')
+      meta = YAML.load( IO.read( dir + '/meta.yaml'))
+    end
+
+    found = meta['pictures'].collect {|item| item['picture']}
+    added = false
+
+    Dir.entries( dir).each do |f|
+      if m = /^(.*)\.(jpg|webp|jpeg|png)$/.match( f)
+        meta['pictures'] << {'picture' => m[1], 'used' => nil}
+        added = true
+      end
+    end
+
+    if added
+      File.open( dir + '/meta.yaml', 'w') do |io|
+        io.print meta.to_yaml
       end
     end
   end
