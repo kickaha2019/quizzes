@@ -8,6 +8,7 @@
 require 'common.rb'
 require 'anagrams.rb'
 require 'emojis.rb'
+require 'joining_words'
 require 'letter_change.rb'
 require 'missing_word'
 require 'no_vowels.rb'
@@ -53,6 +54,9 @@ class Generator
     elsif /^Emojis/ =~ dir
       emojis = Emojis.new( @index, name, dir, @size)
       emojis.generate( questions, output)
+    elsif /^JoiningWords/ =~ dir
+      joining_words = JoiningWords.new( @index, dir, @size)
+      joining_words.generate( questions, output)
     elsif /^LetterChange/ =~ dir
       letter_change = LetterChange.new( @index, name, dir, @size)
       letter_change.generate( questions, output)

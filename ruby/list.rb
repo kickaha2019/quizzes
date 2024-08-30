@@ -27,14 +27,15 @@ def last_used( items)
   end
 end
 
-types =  {'Anagrams'    => 'anagrams',
-          'MissingWord' => 'groups',
-          'NoVowels'    => 'phrases',
-          'Pairs'       => 'pairs',
-          'Questions'   => 'questions',
-          'Rebuses'     => 'rebuses',
-          'Sequences'   => 'sequences',
-          'Sounds'      => 'sounds'
+types =  {'Anagrams'     => 'anagrams',
+          'JoiningWords' => 'words',
+          'MissingWord'  => 'groups',
+          'NoVowels'     => 'phrases',
+          'Pairs'        => 'pairs',
+          'Questions'    => 'questions',
+          'Rebuses'      => 'rebuses',
+          'Sequences'    => 'sequences',
+          'Sounds'       => 'sounds'
 }
 
 data = Hash.new {|h,k| h[k] = {}}
